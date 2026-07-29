@@ -5,10 +5,27 @@ const AdminAuthContext = createContext(null);
 
 export const AdminAuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem('admin_user');
-    return savedUser ? JSON.parse(savedUser) : null;
+    try {
+      const savedUser = localStorage.getItem('admin_user');
+      if (!savedUser || savedUser === 'undefined' || savedUser === 'null') {
+        localStorage.removeItem('admin_user');
+        return null;
+      }
+      return JSON.parse(savedUser);
+    } catch (e) {
+      localStorage.removeItem('admin_user');
+      return null;
+    }
   });
-  const [token, setToken] = useState(() => localStorage.getItem('admin_token'));
+
+  const [token, setToken] = useState(() => {
+    const savedToken = localStorage.getItem('admin_token');
+    if (!savedToken || savedToken === 'undefined' || savedToken === 'null') {
+      localStorage.removeItem('admin_token');
+      return null;
+    }
+    return savedToken;
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
