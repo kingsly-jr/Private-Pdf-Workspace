@@ -80,10 +80,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
-        log.error("Unhandled Exception caught: ", ex);
+        log.error("Unhandled Exception caught during PDF processing: ", ex);
+        String detailedMessage = ex.getMessage() != null && !ex.getMessage().isBlank()
+                ? ex.getMessage()
+                : "An unexpected error occurred during processing. Please try again.";
+
         ErrorResponse error = ErrorResponse.builder()
                 .error("PROCESSING_FAILED")
-                .message("An unexpected error occurred during processing. Please try again.")
+                .message(detailedMessage)
                 .build();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
