@@ -8,15 +8,14 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'https://private-pdf-workspace.onrender.com',
         changeOrigin: true,
         secure: false,
         configure: (proxy, _options) => {
           proxy.on('error', (err, _req, res) => {
-            // Gracefully handle ECONNREFUSED when backend is offline without terminal noise
             if (err.code === 'ECONNREFUSED' && res && !res.headersSent) {
               res.writeHead(503, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ error: 'BACKEND_OFFLINE', message: 'Backend service at localhost:8080 is offline.' }));
+              res.end(JSON.stringify({ error: 'BACKEND_OFFLINE', message: 'Render backend service is unreachable.' }));
             }
           });
         },
