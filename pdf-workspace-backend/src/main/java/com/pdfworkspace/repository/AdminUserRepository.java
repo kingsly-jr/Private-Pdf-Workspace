@@ -10,5 +10,6 @@ import java.util.UUID;
 @Repository
 public interface AdminUserRepository extends JpaRepository<AdminUser, UUID> {
     Optional<AdminUser> findByUsername(String username);
+    Optional<AdminUser> findByUsernameIgnoreCase(String username);
     boolean existsByUsername(String username);
 }

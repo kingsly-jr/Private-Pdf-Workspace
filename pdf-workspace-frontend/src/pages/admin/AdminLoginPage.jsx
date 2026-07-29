@@ -91,14 +91,17 @@ export default function AdminLoginPage() {
           {!forcePasswordMode ? (
             <form onSubmit={handleLoginSubmit} className="space-y-5">
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Username</label>
+                <label htmlFor="admin-username" className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Username</label>
                 <div className="relative">
                   <User className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-500" />
                   <input
+                    id="admin-username"
+                    name="username"
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
+                    autoComplete="username"
                     placeholder="Enter admin username"
                     className="w-full bg-slate-900/80 border border-slate-700/60 rounded-xl py-2.5 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all placeholder:text-slate-600"
                   />
@@ -106,14 +109,17 @@ export default function AdminLoginPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Password</label>
+                <label htmlFor="admin-password" className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Password</label>
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-500" />
                   <input
+                    id="admin-password"
+                    name="password"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    autoComplete="current-password"
                     placeholder="Enter admin password"
                     className="w-full bg-slate-900/80 border border-slate-700/60 rounded-xl py-2.5 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all placeholder:text-slate-600"
                   />
@@ -135,15 +141,18 @@ export default function AdminLoginPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">New Password</label>
+                <label htmlFor="admin-new-password" className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">New Password</label>
                 <div className="relative">
                   <KeyRound className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-500" />
                   <input
+                    id="admin-new-password"
+                    name="newPassword"
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     required
                     minLength={8}
+                    autoComplete="new-password"
                     placeholder="At least 8 characters"
                     className="w-full bg-slate-900/80 border border-slate-700/60 rounded-xl py-2.5 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all"
                   />
@@ -151,14 +160,17 @@ export default function AdminLoginPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Confirm New Password</label>
+                <label htmlFor="admin-confirm-password" className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Confirm New Password</label>
                 <div className="relative">
                   <KeyRound className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-500" />
                   <input
+                    id="admin-confirm-password"
+                    name="confirmPassword"
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
+                    autoComplete="new-password"
                     placeholder="Repeat new password"
                     className="w-full bg-slate-900/80 border border-slate-700/60 rounded-xl py-2.5 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all"
                   />

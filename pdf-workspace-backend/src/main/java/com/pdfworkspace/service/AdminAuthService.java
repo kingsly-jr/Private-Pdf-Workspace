@@ -61,10 +61,13 @@ public class AdminAuthService {
 
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
-        AdminUser admin = adminUserRepository.findByUsername(request.getUsername())
+        String username = request.getUsername() != null ? request.getUsername().trim() : "";
+        String password = request.getPassword() != null ? request.getPassword().trim() : "";
+
+        AdminUser admin = adminUserRepository.findByUsernameIgnoreCase(username)
                 .orElseThrow(() -> new PdfWorkspaceException("INVALID_CREDENTIALS", "Invalid username or password"));
 
-        if (!passwordEncoder.matches(request.getPassword(), admin.getPasswordHash())) {
+        if (!passwordEncoder.matches(password, admin.getPasswordHash())) {
             throw new PdfWorkspaceException("INVALID_CREDENTIALS", "Invalid username or password");
         }
 
