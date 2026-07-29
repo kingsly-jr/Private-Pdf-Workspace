@@ -1,8 +1,19 @@
 import axios from 'axios';
 
-// Admin API Axios instance - scoped only to /api/admin/*
+// Dynamically compute baseURL for adminApi (supports custom VITE_API_BASE_URL for Render deployment)
+const getAdminBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (envUrl) {
+    const cleanUrl = envUrl.replace(/\/+$/, '');
+    return cleanUrl.endsWith('/admin') ? cleanUrl : `${cleanUrl}/admin`;
+  }
+  return '/api/admin';
+};
+
+// Admin API Axios instance - scoped to /api/admin
 const adminApi = axios.create({
-  baseURL: '/api/admin',
+  baseURL: getAdminBaseUrl(),
+  timeout: 60000, // 60 second timeout for Render free tier cold starts
   headers: {
     'Content-Type': 'application/json',
   },

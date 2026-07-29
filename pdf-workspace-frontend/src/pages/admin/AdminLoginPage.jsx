@@ -131,7 +131,14 @@ export default function AdminLoginPage() {
                 disabled={submitting}
                 className="w-full py-3 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-semibold text-sm rounded-xl transition-all shadow-glow flex items-center justify-center space-x-2 disabled:opacity-50"
               >
-                {submitting ? 'Authenticating...' : 'Sign In to Admin Panel'}
+                {submitting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Connecting & Authenticating...</span>
+                  </span>
+                ) : (
+                  'Sign In to Admin Panel'
+                )}
               </button>
             </form>
           ) : (
