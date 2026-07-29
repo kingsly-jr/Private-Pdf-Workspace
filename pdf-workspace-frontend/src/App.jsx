@@ -58,6 +58,14 @@ function DynamicToolRouter() {
 }
 
 function App() {
+  React.useEffect(() => {
+    const redirectPath = sessionStorage.getItem('spa_redirect_path');
+    if (redirectPath && redirectPath !== window.location.pathname) {
+      sessionStorage.removeItem('spa_redirect_path');
+      window.history.replaceState(null, '', redirectPath);
+    }
+  }, []);
+
   return (
     <AdminAuthProvider>
       <BrowserRouter>

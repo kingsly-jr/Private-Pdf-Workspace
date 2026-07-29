@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Roriri Workspace</title>
+    <script>
+      // Save deep SPA path before redirecting to index.html
+      sessionStorage.setItem('spa_redirect_path', window.location.pathname + window.location.search + window.location.hash);
+      window.location.replace('/');
+    </script>
+  </head>
+  <body>
+  </body>
+</html>
