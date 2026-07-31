@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '../layout/Navbar';
 import Footer from '../layout/Footer';
@@ -150,6 +150,39 @@ export default function PdfPageToolView() {
   const [rotateAngle, setRotateAngle] = useState(90);
   const [rotatePages, setRotatePages] = useState('');
 
+  // Organize state & handlers
+  const [pageOrder, setPageOrder] = useState([]);
+  const [organizeRotations, setOrganizeRotations] = useState({});
+  const [deletedPages, setDeletedPages] = useState([]);
+
+  const handleOrganizeTotalPages = (n) => {
+    setTotalPages(n);
+    setPageOrder(Array.from({ length: n }, (_, i) => i + 1));
+    setOrganizeRotations({});
+    setDeletedPages([]);
+  };
+
+  const handleMovePageOrganize = (fromIndex, toIndex) => {
+    if (toIndex < 0 || toIndex >= pageOrder.length) return;
+    const updated = [...pageOrder];
+    const [moved] = updated.splice(fromIndex, 1);
+    updated.splice(toIndex, 0, moved);
+    setPageOrder(updated);
+  };
+
+  const handleRotatePageOrganize = (pageNum) => {
+    setOrganizeRotations(prev => ({
+      ...prev,
+      [pageNum]: ((prev[pageNum] || 0) + 90) % 360
+    }));
+  };
+
+  const handleToggleDeletePageOrganize = (pageNum) => {
+    setDeletedPages(prev =>
+      prev.includes(pageNum) ? prev.filter(p => p !== pageNum) : [...prev, pageNum]
+    );
+  };
+
   const [cropTop, setCropTop] = useState(36);
   const [cropBottom, setCropBottom] = useState(36);
   const [cropLeft, setCropLeft] = useState(36);
@@ -183,6 +216,11 @@ export default function PdfPageToolView() {
   const handleSubmit = async () => {
     if (!hasFiles) {
       toast.error('Please select file(s) before processing.');
+      return;
+    }
+
+    if (slug === 'merge' && files.length < 2) {
+      toast.error('Please upload at least 2 PDF files to perform a merge.');
       return;
     }
 
@@ -220,6 +258,14 @@ export default function PdfPageToolView() {
       } else if (slug === 'resize') {
         formData.append('pageSize', pageSize);
         formData.append('orientation', orientation);
+      } else if (slug === 'organize') {
+        if (pageOrder.length > 0) formData.append('pageOrder', pageOrder.join(','));
+        if (deletedPages.length > 0) formData.append('deletePages', deletedPages.join(','));
+        const rotPairs = Object.entries(organizeRotations)
+          .filter(([_, angle]) => angle > 0)
+          .map(([p, angle]) => `${p}:${angle}`)
+          .join(',');
+        if (rotPairs) formData.append('rotations', rotPairs);
       }
 
       updateProgress(30);
@@ -338,58 +384,55 @@ export default function PdfPageToolView() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Left Main Workspace Panel */}
               <div className="lg:col-span-2 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-                    {slug === 'delete-pages' ? 'Select Pages to Delete' : `Selected Files (${files.length})`}
-                  </h3>
-                  <button
-                    onClick={() => {
-                      clearFiles();
-                      setSelectedDeletePages([]);
-                      setDeletePageNums('');
-                    }}
-                    className="text-xs text-slate-400 hover:text-rose-400 transition-colors"
-                  >
-                    Change File
-                  </button>
-                </div>
 
-                {/* Show Visualizer Grid for Delete Pages */}
+                {/* Render Visual Page Preview on Left Side for All Page Tools */}
                 {slug === 'delete-pages' ? (
                   <PdfPageVisualizer
                     file={files[0]}
+                    mode="select"
+                    actionBadge="Delete"
                     selectedPages={selectedDeletePages}
                     onSelectionChange={handleVisualizerSelection}
                     onTotalPagesChange={setTotalPages}
+                    onAddFiles={(newFiles) => addFiles(newFiles)}
+                    onRemoveFile={(idx) => removeFile(idx)}
+                  />
+                ) : slug === 'split' ? (
+                  <PdfPageVisualizer
+                    file={files[0]}
+                    mode="select"
+                    actionBadge="Split"
+                    selectedPages={selectedDeletePages}
+                    onSelectionChange={(pages) => {
+                      setSelectedDeletePages(pages);
+                      if (pages.length > 0) setSplitRanges(pages.join(', '));
+                    }}
+                    onTotalPagesChange={setTotalPages}
+                    onAddFiles={(newFiles) => addFiles(newFiles)}
+                    onRemoveFile={(idx) => removeFile(idx)}
+                  />
+                ) : slug === 'organize' ? (
+                  <PdfPageVisualizer
+                    file={files[0]}
+                    mode="organize"
+                    pageOrder={pageOrder}
+                    rotations={organizeRotations}
+                    deletedPages={deletedPages}
+                    onMovePage={handleMovePageOrganize}
+                    onRotatePage={handleRotatePageOrganize}
+                    onToggleDeletePage={handleToggleDeletePageOrganize}
+                    onTotalPagesChange={handleOrganizeTotalPages}
+                    onAddFiles={(newFiles) => addFiles(newFiles)}
+                    onRemoveFile={(idx) => removeFile(idx)}
                   />
                 ) : (
-                  <div className="space-y-3">
-                    {files.map((file, idx) => (
-                      <div key={idx} className="relative group">
-                        <FileCard file={file} onRemove={() => removeFile(idx)} index={idx} />
-                        {slug === 'merge' && files.length > 1 && (
-                          <div className="absolute right-12 top-1/2 -translate-y-1/2 flex items-center space-x-1">
-                            <button
-                              onClick={() => moveFile(idx, idx - 1)}
-                              disabled={idx === 0}
-                              className="p-1 text-slate-400 hover:text-white disabled:opacity-30"
-                              title="Move up"
-                            >
-                              <ArrowUp className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => moveFile(idx, idx + 1)}
-                              disabled={idx === files.length - 1}
-                              className="p-1 text-slate-400 hover:text-white disabled:opacity-30"
-                              title="Move down"
-                            >
-                              <ArrowDown className="w-4 h-4" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                  <PdfPageVisualizer
+                    files={files}
+                    mode="view"
+                    onTotalPagesChange={setTotalPages}
+                    onAddFiles={(newFiles) => addFiles(newFiles)}
+                    onRemoveFile={(idx) => removeFile(idx)}
+                  />
                 )}
               </div>
 
@@ -636,12 +679,64 @@ export default function PdfPageToolView() {
                       </div>
                     )}
 
+                    {slug === 'organize' && (
+                      <div className="space-y-4 text-xs">
+                        <div className="bg-brand-500/10 border border-brand-500/20 rounded-xl p-3.5 space-y-1.5 text-brand-300">
+                          <p className="font-bold text-white flex items-center space-x-1.5">
+                            <Info className="w-4 h-4 text-brand-400" />
+                            <span>Organize Page Controls</span>
+                          </p>
+                          <p className="text-[11px] leading-relaxed text-slate-300">
+                            Use the <span className="font-bold text-white">← →</span> buttons to reorder, <span className="font-bold text-brand-400">🔄</span> to rotate, and <span className="font-bold text-rose-400">🗑️</span> to delete pages directly on each card.
+                          </p>
+                        </div>
+
+                        <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-2">
+                          <div className="flex justify-between text-slate-400">
+                            <span>Total original pages:</span>
+                            <span className="font-bold text-white">{totalPages}</span>
+                          </div>
+                          <div className="flex justify-between text-slate-400">
+                            <span>Final pages in output:</span>
+                            <span className="font-bold text-emerald-400">{pageOrder.length - deletedPages.length}</span>
+                          </div>
+                          {deletedPages.length > 0 && (
+                            <div className="flex justify-between text-slate-400">
+                              <span>Pages marked for deletion:</span>
+                              <span className="font-bold text-rose-400">{deletedPages.length}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {(deletedPages.length > 0 || Object.keys(organizeRotations).length > 0) && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPageOrder(Array.from({ length: totalPages }, (_, i) => i + 1));
+                              setOrganizeRotations({});
+                              setDeletedPages([]);
+                            }}
+                            className="w-full py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-bold text-xs rounded-xl transition-all"
+                          >
+                            Reset All Organizing Changes
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    {slug === 'merge' && files.length < 2 && (
+                      <div className="p-3.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-300 text-xs leading-relaxed flex items-start space-x-2">
+                        <Info className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                        <span>Upload at least 2 PDF files to execute a merge operation. Use '+ Add Files' in the left workspace header.</span>
+                      </div>
+                    )}
+
                     {isProcessing && <ProgressBar progress={progress} statusText={`Executing ${config.name}...`} />}
 
                     <button
                       onClick={handleSubmit}
-                      disabled={isProcessing}
-                      className="w-full py-3.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-bold text-sm rounded-xl transition-all shadow-glow flex items-center justify-center space-x-2 disabled:opacity-50"
+                      disabled={isProcessing || (slug === 'merge' && files.length < 2)}
+                      className="w-full py-3.5 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-bold text-sm rounded-xl transition-all shadow-glow flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Play className="w-4 h-4 fill-white" />
                       <span>Execute {config.name}</span>

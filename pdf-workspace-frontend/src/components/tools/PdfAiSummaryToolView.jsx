@@ -4,6 +4,7 @@ import Footer from '../layout/Footer';
 import UploadArea from '../common/UploadArea';
 import FileCard from '../common/FileCard';
 import ProgressBar from '../common/ProgressBar';
+import PdfPageVisualizer from '../common/PdfPageVisualizer';
 import useUpload from '../../hooks/useUpload';
 import useProcessing from '../../hooks/useProcessing';
 import api from '../../services/api';
@@ -206,30 +207,42 @@ export default function PdfAiSummaryToolView() {
             </div>
           </div>
         ) : (
-          /* File Upload & Start State */
-          <div className="glass-card p-6 md:p-8 rounded-3xl border border-slate-800 space-y-6">
+          <div>
             {!hasFiles ? (
-              <UploadArea
-                onFilesSelected={addFiles}
-                accept={{ 'application/pdf': ['.pdf'] }}
-                multiple={false}
-                title="Upload PDF for AI Summarizer"
-                subtitle="Drag & drop your PDF file or click to select"
-              />
+              <div className="glass-card p-6 md:p-8 rounded-3xl border border-slate-800 space-y-6">
+                <UploadArea
+                  onFilesSelected={addFiles}
+                  accept={{ 'application/pdf': ['.pdf'] }}
+                  multiple={false}
+                  title="Upload PDF for AI Summarizer"
+                  subtitle="Drag & drop your PDF file or click to select"
+                />
+              </div>
             ) : (
-              <div className="space-y-6">
-                <FileCard file={files[0]} onRemove={() => removeFile(0)} />
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Visual Page Workspace Left Panel */}
+                <div className="lg:col-span-2 space-y-4">
+                  <PdfPageVisualizer files={files} mode="view" onAddFiles={(newFiles) => addFiles(newFiles)} onRemoveFile={(idx) => removeFile(idx)} />
+                </div>
 
-                {isProcessing && <ProgressBar progress={progress} statusText="Analyzing document text & generating summary..." />}
+                {/* Right Execution Control Card */}
+                <div className="glass-card p-6 rounded-2xl border border-slate-800 space-y-5 h-fit">
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">AI Analysis Controls</h3>
+                    <FileCard file={files[0]} onRemove={() => removeFile(0)} />
 
-                <button
-                  onClick={handleSubmit}
-                  disabled={isProcessing}
-                  className="w-full py-4 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-bold text-sm rounded-xl transition-all shadow-glow flex items-center justify-center space-x-2 disabled:opacity-50"
-                >
-                  <Sparkles className="w-4 h-4 fill-white" />
-                  <span>Generate AI Summary</span>
-                </button>
+                    {isProcessing && <ProgressBar progress={progress} statusText="Analyzing document text & generating summary..." />}
+
+                    <button
+                      onClick={handleSubmit}
+                      disabled={isProcessing}
+                      className="w-full py-4 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-bold text-sm rounded-xl transition-all shadow-glow flex items-center justify-center space-x-2 disabled:opacity-50"
+                    >
+                      <Sparkles className="w-4 h-4 fill-white" />
+                      <span>Generate AI Summary</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>

@@ -5,6 +5,7 @@ import Footer from '../layout/Footer';
 import UploadArea from '../common/UploadArea';
 import FileCard from '../common/FileCard';
 import ProgressBar from '../common/ProgressBar';
+import PdfPageVisualizer from '../common/PdfPageVisualizer';
 import useUpload from '../../hooks/useUpload';
 import useProcessing from '../../hooks/useProcessing';
 import useDownload from '../../hooks/useDownload';
@@ -109,13 +110,9 @@ export default function PdfCompressionToolView() {
             />
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Target File Panel */}
+              {/* Target File Workspace Panel */}
               <div className="lg:col-span-2 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-white uppercase tracking-wider">Target PDF</h3>
-                  <button onClick={clearFiles} className="text-xs text-slate-400 hover:text-rose-400">Change File</button>
-                </div>
-                <FileCard file={files[0]} onRemove={clearFiles} index={0} />
+                <PdfPageVisualizer files={files} mode="view" onAddFiles={(newFiles) => addFiles(newFiles)} onRemoveFile={(idx) => removeFile(idx)} />
 
                 {/* Compression Statistics & Download/View Card */}
                 {compressionResult && (

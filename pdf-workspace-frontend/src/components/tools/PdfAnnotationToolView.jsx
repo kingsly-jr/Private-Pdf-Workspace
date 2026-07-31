@@ -5,6 +5,7 @@ import Footer from '../layout/Footer';
 import UploadArea from '../common/UploadArea';
 import FileCard from '../common/FileCard';
 import ProgressBar from '../common/ProgressBar';
+import PdfPageVisualizer from '../common/PdfPageVisualizer';
 import useUpload from '../../hooks/useUpload';
 import useProcessing from '../../hooks/useProcessing';
 import useDownload from '../../hooks/useDownload';
@@ -209,13 +210,9 @@ export default function PdfAnnotationToolView() {
             />
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* File List Panel */}
+              {/* Visual Page Workspace Left Panel */}
               <div className="lg:col-span-2 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-white uppercase tracking-wider">Target PDF</h3>
-                  <button onClick={documentUpload.clearFiles} className="text-xs text-slate-400 hover:text-rose-400">Change File</button>
-                </div>
-                <FileCard file={documentUpload.files[0]} onRemove={documentUpload.clearFiles} index={0} />
+                <PdfPageVisualizer files={documentUpload.files} mode="view" onAddFiles={(newFiles) => documentUpload.addFiles(newFiles)} onRemoveFile={(idx) => documentUpload.removeFile(idx)} />
 
                 {slug === 'sign-pdf' && (
                   <div className="pt-4 border-t border-slate-800">

@@ -5,6 +5,7 @@ import Footer from '../layout/Footer';
 import UploadArea from '../common/UploadArea';
 import FileCard from '../common/FileCard';
 import ProgressBar from '../common/ProgressBar';
+import PdfPageVisualizer from '../common/PdfPageVisualizer';
 import useUpload from '../../hooks/useUpload';
 import useProcessing from '../../hooks/useProcessing';
 import useDownload from '../../hooks/useDownload';
@@ -370,47 +371,9 @@ export default function PdfConversionToolView() {
               </div>
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* File List Panel */}
+                {/* Visual Page Workspace Left Panel */}
                 <div className="lg:col-span-2 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-                      Selected Input Files ({files.length})
-                    </h3>
-                    <button
-                      onClick={clearFiles}
-                      className="text-xs text-slate-400 hover:text-rose-400 transition-colors"
-                    >
-                      Clear All
-                    </button>
-                  </div>
-
-                  <div className="space-y-3">
-                    {files.map((file, idx) => (
-                      <div key={idx} className="relative group">
-                        <FileCard file={file} onRemove={() => removeFile(idx)} index={idx} />
-                        {slug === 'jpg-to-pdf' && files.length > 1 && (
-                          <div className="absolute right-12 top-1/2 -translate-y-1/2 flex items-center space-x-1">
-                            <button
-                              onClick={() => moveFile(idx, idx - 1)}
-                              disabled={idx === 0}
-                              className="p-1 text-slate-400 hover:text-white disabled:opacity-30"
-                              title="Move up"
-                            >
-                              <ArrowUp className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => moveFile(idx, idx + 1)}
-                              disabled={idx === files.length - 1}
-                              className="p-1 text-slate-400 hover:text-white disabled:opacity-30"
-                              title="Move down"
-                            >
-                              <ArrowDown className="w-4 h-4" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                  <PdfPageVisualizer files={files} mode="view" onAddFiles={(newFiles) => addFiles(newFiles)} onRemoveFile={(idx) => removeFile(idx)} />
                 </div>
 
                 {/* Options & Convert Action Panel */}

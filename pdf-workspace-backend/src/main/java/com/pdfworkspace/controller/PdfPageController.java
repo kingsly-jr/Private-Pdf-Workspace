@@ -300,6 +300,79 @@ public class PdfPageController {
         }
     }
 
+    @PostMapping("/organize")
+    public ResponseEntity<Resource> organizePdf(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "pageOrder", required = false) String pageOrderStr,
+            @RequestParam(value = "rotations", required = false) String rotationsStr,
+            @RequestParam(value = "deletePages", required = false) String deletePagesStr) {
+        String toolKey = "organize";
+        featureFlagService.validateToolEnabled(toolKey);
+        validateFile(file, toolKey);
+
+        long startTime = System.currentTimeMillis();
+        Path workingDir = null;
+        try {
+            workingDir = tempStorageService.createWorkingDir();
+            Path savedFile = tempStorageService.saveFile(file, workingDir);
+            Path outputPath = workingDir.resolve("organized_document.pdf");
+
+            // Parse pageOrder
+            List<Integer> order = new ArrayList<>();
+            if (pageOrderStr != null && !pageOrderStr.isBlank()) {
+                for (String s : pageOrderStr.split(",")) {
+                    try { order.add(Integer.parseInt(s.trim())); } catch (NumberFormatException ignored) {}
+                }
+            }
+
+            // Parse deletePages to exclude
+            java.util.Set<Integer> toDelete = new java.util.HashSet<>();
+            if (deletePagesStr != null && !deletePagesStr.isBlank()) {
+                for (String s : deletePagesStr.split(",")) {
+                    try { toDelete.add(Integer.parseInt(s.trim())); } catch (NumberFormatException ignored) {}
+                }
+            }
+            if (!toDelete.isEmpty()) {
+                order.removeIf(toDelete::contains);
+            }
+
+            // Parse rotations e.g. "1:90,2:180"
+            java.util.Map<Integer, Integer> rotationMap = new java.util.HashMap<>();
+            if (rotationsStr != null && !rotationsStr.isBlank()) {
+                for (String pair : rotationsStr.split(",")) {
+                    String[] parts = pair.split(":");
+                    if (parts.length == 2) {
+                        try {
+                            int p = Integer.parseInt(parts[0].trim());
+                            int rot = Integer.parseInt(parts[1].trim());
+                            rotationMap.put(p, rot);
+                        } catch (NumberFormatException ignored) {}
+                    }
+                }
+            }
+
+            pdfPageService.organizePdf(savedFile, order, rotationMap, null, outputPath);
+            byte[] resultBytes = Files.readAllBytes(outputPath);
+
+            long duration = System.currentTimeMillis() - startTime;
+            historyService.recordRun(toolKey, "SUCCESS", 1, file.getSize(), resultBytes.length, duration, null);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"organized_document.pdf\"")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .contentLength(resultBytes.length)
+                    .body(new ByteArrayResource(resultBytes));
+
+        } catch (Exception e) {
+            long duration = System.currentTimeMillis() - startTime;
+            historyService.recordRun(toolKey, "FAILED", 1, file.getSize(), 0, duration, "PROCESSING_FAILED");
+            if (e instanceof PdfWorkspaceException pwe) throw pwe;
+            throw new PdfWorkspaceException("PROCESSING_FAILED", "Failed to organize PDF pages.", toolKey);
+        } finally {
+            if (workingDir != null) tempStorageService.purgeDirectory(workingDir);
+        }
+    }
+
     private void validateFile(MultipartFile file, String toolKey) {
         if (file == null || file.isEmpty()) {
             throw new PdfWorkspaceException("INVALID_FILE", "Please select a valid PDF document.", toolKey);
