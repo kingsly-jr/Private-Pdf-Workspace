@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAdminAuth } from '../../hooks/useAdminAuth';
-import { ShieldCheck, Lock, User, KeyRound, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Lock, User, KeyRound, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function AdminLoginPage() {
@@ -12,6 +12,7 @@ export default function AdminLoginPage() {
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [forcePasswordMode, setForcePasswordMode] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const { login, changePassword } = useAdminAuth();
   const navigate = useNavigate();
@@ -115,14 +116,22 @@ export default function AdminLoginPage() {
                   <input
                     id="admin-password"
                     name="password"
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     autoComplete="current-password"
                     placeholder="Enter admin password"
-                    className="w-full bg-slate-900/80 border border-slate-700/60 rounded-xl py-2.5 pl-10 pr-4 text-white text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all placeholder:text-slate-600"
+                    className="w-full bg-slate-900/80 border border-slate-700/60 rounded-xl py-2.5 pl-10 pr-10 text-white text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all placeholder:text-slate-600"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-3 w-4 h-4 text-slate-500 hover:text-slate-300 focus:outline-none transition-colors"
+                    title={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
 

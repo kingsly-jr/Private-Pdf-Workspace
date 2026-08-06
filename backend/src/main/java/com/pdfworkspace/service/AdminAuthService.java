@@ -29,7 +29,7 @@ public class AdminAuthService {
     @Transactional
     public void seedDefaultAdminIfEmpty() {
         String defaultUsername = "admin";
-        String defaultPassword = "admin@123";
+        String defaultPassword = "pass@123";
         String defaultEmail = "admin@roririworkspace.internal";
 
         AdminUser admin = adminUserRepository.findByUsername(defaultUsername).orElse(null);

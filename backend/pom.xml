@@ -94,6 +94,13 @@
             <version>${poi.version}</version>
         </dependency>
 
+        <!-- Auto-load .env configuration file -->
+        <dependency>
+            <groupId>me.paulschwarz</groupId>
+            <artifactId>spring-dotenv</artifactId>
+            <version>4.0.0</version>
+        </dependency>
+
         <!-- Developer Tools & Lombok -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
